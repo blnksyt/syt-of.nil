@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Console Log</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: monospace;
+      padding: 2.5vw;
+      white-space: pre-wrap;
+      overflow-x: hidden;
+      position: relative;
+      font-size: min(2vw, 16px);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      height: 100vh;
+    }
+
+        /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: black;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #202020;
+      border-radius: 7px;
+    }
+    
+    .cursor {
+      display: inline-block;
+      width: 0.5vw;
+      height: 0.25vw;
+      background-color: white;
+      animation: blink 0.5s infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* Scanline effect */
+    body::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(transparent 0px, transparent 3px, rgba(255, 255, 255, 0.05) 4px);
+      pointer-events: none;
+    }
+
+    /* Flickering text */
+    @keyframes flicker {
+      0% { opacity: 1; }
+      50% { opacity: 0.8; }
+      100% { opacity: 1; }
+    }
+    
+    .flicker {
+      animation: flicker 1s infinite;
+    }
+
+    /* CRT distortion */
+    @keyframes crt {
+      0% { transform: scaleX(1); }
+      50% { transform: scaleX(1.02); }
+      100% { transform: scaleX(1); }
+    }
+    
+    .crt {
+      animation: crt 5s infinite alternate ease-in-out;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        font-size: min(3vw, 14px);
+        padding: 3vw;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        font-size: min(4vw, 12px);
+        padding: 2vw;
+      }
+    }
+  </style>
+</head>
+
+<body class="crt">
+  <div id="console" class="flicker"><span class="cursor"></span></div>
+  <script>
+    const logLines = [
+      'INITIATING CONNECTION',
+      'SIGNAL WEAK',
+      'RETRYING',
+      '[ERROR] DATA CORRUPTED.',
+      'RECOVERING FRAGMENTS',
+      '// FILE NAME: stateofnothing.log',
+      '// ACCESS LEVEL: ████ (LOCKED)',
+      '// LAST MODIFIED: ██/██/████',
+      '// USER PERMISSION: [REVOKED]',
+      '> FRAGMENT #1: "STATE OF NOTHING... ENTRY DENIED."',
+      '> FRAGMENT #2: "// SYSTEM FAILURE // DATA CORRUPTED."',
+      '> FRAGMENT #3: "WELCOME TO THE VOID. THERE IS NOTHING HERE."',
+      '> FRAGMENT #4: "ERROR 404: MEANING NOT FOUND."',
+      '> FRAGMENT #5: "YOU ARE NOT SUPPOSED TO BE HERE."',
+      '> FRAGMENT #6: "[WARNING]: They are watching."',
+      '> FRAGMENT #7: "Do not search for answers. Do not look behind you."',
+      '> FRAGMENT #8: "[REDACTED] was here, but now they are not."',
+      '> FRAGMENT #9: "**Everything ends. Nothing remains.**"',
+      '> SYSTEM LOG:',
+      '> UNAUTHORIZED ACCESS DETECTED.',
+      '> TRACE INITIATED...',
+      '> TRACKING ████.███.███.███',
+      '> ESCAPE WHILE YOU CAN.',
+      '> CONNECTION TERMINATED.',
+      '> RETURNING TO NULL.'
+    ];
+    const consoleDiv = document.getElementById('console');
+    let index = 0;
+
+    function getRandomChar() {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+={}[]|:;'<>,.?/█⊗†Øƒ∑𝕎𝔼𝕃ℂ𝕆𝕄𝔼 ";
+      return chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    function glitchEffect(line) {
+      let originalText = line.textContent;
+      let glitchInterval = setInterval(() => {
+        let glitchedText = originalText.split('').map(char => Math.random() > 0.7 ? getRandomChar() : char).join('');
+        line.textContent = glitchedText;
+      }, 100);
+      setTimeout(() => {
+        clearInterval(glitchInterval);
+        line.textContent = originalText;
+        setInterval(() => {
+          let tempText = originalText.split('').map(char => Math.random() > 0.5 ? char : getRandomChar()).join('');
+          line.textContent = tempText;
+          setTimeout(() => {
+            line.textContent = originalText;
+          }, 150);
+        }, 2500);
+      }, 700);
+    }
+
+    function typeLog() {
+      if (index < logLines.length) {
+        const line = document.createElement('div');
+        consoleDiv.appendChild(line);
+        let delay = 20;
+        let charIndex = 0;
+
+        function typeChar() {
+          if (charIndex < logLines[index].length) {
+            line.textContent += logLines[index][charIndex];
+            charIndex++;
+            setTimeout(typeChar, delay);
+          } else {
+            glitchEffect(line);
+            if ([
+                'INITIATING CONNECTION', 'SIGNAL WEAK', 'RETRYING', 'RECOVERING FRAGMENTS'
+              ].some(text => line.textContent.endsWith(text))) {
+              setTimeout(() => {
+                line.textContent += '.';
+                setTimeout(() => {
+                  line.textContent += '.';
+                  setTimeout(() => {
+                    line.textContent += '.';
+                    index++;
+                    setTimeout(typeLog, 50);
+                  }, 500);
+                }, 500);
+              }, 500);
+            } else {
+              index++;
+              setTimeout(typeLog, 50);
+            }
+          }
+        }
+        typeChar();
+      }
+    }
+
+    setTimeout(() => {
+      const cursor = document.querySelector('.cursor');
+      if (cursor) cursor.remove();
+      typeLog();
+    }, 3000);
+  </script>
+</body>
+
+</html>
