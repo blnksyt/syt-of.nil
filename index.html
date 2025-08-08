@@ -21,7 +21,7 @@
       height: 100vh;
     }
 
-        /* Custom Scrollbar */
+    /* Custom Scrollbar */
     ::-webkit-scrollbar {
       width: 5px;
     }
@@ -34,7 +34,7 @@
       background: #202020;
       border-radius: 7px;
     }
-    
+
     .cursor {
       display: inline-block;
       width: 0.5vw;
@@ -67,7 +67,7 @@
       50% { opacity: 0.8; }
       100% { opacity: 1; }
     }
-    
+
     .flicker {
       animation: flicker 1s infinite;
     }
@@ -78,7 +78,7 @@
       50% { transform: scaleX(1.02); }
       100% { transform: scaleX(1); }
     }
-    
+
     .crt {
       animation: crt 5s infinite alternate ease-in-out;
     }
@@ -139,21 +139,33 @@
 
     function glitchEffect(line) {
       let originalText = line.textContent;
-      let glitchInterval = setInterval(() => {
-        let glitchedText = originalText.split('').map(char => Math.random() > 0.7 ? getRandomChar() : char).join('');
-        line.textContent = glitchedText;
-      }, 100);
+
+      function doGlitchOnce() {
+        let chars = originalText.split('');
+        let glitchCount = Math.floor(Math.random() * (chars.length / 2)) + 1;
+        for (let i = 0; i < glitchCount; i++) {
+          let pos = Math.floor(Math.random() * chars.length);
+          chars[pos] = getRandomChar();
+        }
+        line.textContent = chars.join('');
+      }
+
+      // Initial chaotic burst
+      let burstInterval = setInterval(doGlitchOnce, Math.random() * 80 + 50);
       setTimeout(() => {
-        clearInterval(glitchInterval);
+        clearInterval(burstInterval);
         line.textContent = originalText;
+
+        // Random micro-glitches
         setInterval(() => {
-          let tempText = originalText.split('').map(char => Math.random() > 0.5 ? char : getRandomChar()).join('');
-          line.textContent = tempText;
-          setTimeout(() => {
-            line.textContent = originalText;
-          }, 150);
-        }, 2500);
-      }, 700);
+          if (Math.random() > 0.6) {
+            doGlitchOnce();
+            setTimeout(() => {
+              line.textContent = originalText;
+            }, Math.random() * 200 + 50);
+          }
+        }, Math.random() * 2000 + 1500);
+      }, Math.random() * 500 + 400);
     }
 
     function typeLog() {
